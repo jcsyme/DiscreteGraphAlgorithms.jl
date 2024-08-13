@@ -252,7 +252,8 @@ function read_egl(
     )
 
     if isa(delim, Nothing)
-        !any([endswith(fp, x) for x in values(dict_valid_exts)]) && error("Unable to infer delimiter in read_egl: invalid extension.")
+
+        !any([endswith(fp, x) for x in keys(dict_valid_exts)]) && error("Unable to infer delimiter in read_egl: invalid extension.")
 
         # get delimiter
         delim = nothing
