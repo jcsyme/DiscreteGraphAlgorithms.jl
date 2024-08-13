@@ -40,8 +40,8 @@ export iterand!
 export log_iteration!
 export log_result!
 #
-export Ant1
-export AntColony3
+export Ant
+export AntColony
 
 export IterSpace
 """;
@@ -63,7 +63,7 @@ Create an Ant, used to converge toward a loally optimal solution.
 
 # Constructs 
 
-```Ant1(path, measure)```
+```Ant(path, measure)```
 
 ##  Initialization Arguments
 
@@ -74,12 +74,12 @@ Create an Ant, used to converge toward a loally optimal solution.
 ##  Optional Arguments
 
 """
-struct Ant1
+struct Ant
     k::Int64
     measure::VecOrNoth{Float64}
     path::Vector{Int64}
 
-    function Ant1(
+    function Ant(
         path::Vector{Int64};
         measure::VecOrNoth{Float64} = nothing,
     )
@@ -130,8 +130,8 @@ end
 - `path_index_size`: entry ``i`` stores the number of ants in path_index ``i``
 
 """
-struct AntColony3
-    ants::Vector{Ant1}
+struct AntColony
+    ants::Vector{Ant}
     beta::Real
     heuristic::Symbol
     heuristics::Vector{Float64}
@@ -147,8 +147,8 @@ struct AntColony3
     tau_0::Real
     
 
-    function AntColony3(
-        ants::Vector{Ant1},
+    function AntColony(
+        ants::Vector{Ant},
         graph::AbstractGraph;
         beta::Real = default_parameter_aco_beta,
         heuristic::Symbol = :betweenness_centrality,
@@ -160,13 +160,13 @@ struct AntColony3
 
         # check specification of ants
         n_ants = length(ants)
-        (n_ants == 0) && error("No ants found in AntColony3: stopping...")
+        (n_ants == 0) && error("No ants found in AntColony: stopping...")
 
         # check ant k
         k = nothing
         for (i, ant) in enumerate(ants)
             isa(k, Nothing) && (k = ant.k; continue)
-            (k != ant.k) && error("Error trying to setup AntColony3: inconsistent `k` found in ants. Ensure values are uniform.")
+            (k != ant.k) && error("Error trying to setup AntColony: inconsistent `k` found in ants. Ensure values are uniform.")
         end
         
 
@@ -238,7 +238,7 @@ Calculate the value of the objective function for each organism in the
 ```
 aco_add_measures!(
     params_optimization::OptimizationParameters,
-    colony::AntColony3;
+    colony::AntColony;
     overwrite_existing_measure::Bool = true,
 )
 ```
@@ -259,7 +259,7 @@ aco_add_measures!(
 """
 function aco_add_measures!(
     params_optimization::OptimizationParameters,
-    colony::AntColony3;
+    colony::AntColony;
     overwrite_existing_measure::Bool = true,
 )
 
@@ -290,7 +290,7 @@ Calculate the value of the objective function for each ant that visited a vertex
 ```
 aco_update_pheremone_trails!(
     params_optimization::OptimizationParameters,
-    colony::AntColony3,
+    colony::AntColony,
     num_elite::Int64;
 )
 ```
@@ -310,7 +310,7 @@ aco_update_pheremone_trails!(
 """
 function aco_update_pheremone_trails!(
     params_optimization::OptimizationParameters,
-    colony::AntColony3,
+    colony::AntColony,
     num_elite::Int64;
     #scalar_delta::
 )
@@ -373,7 +373,7 @@ function aco_delta_tau(
 end
 
 function aco_delta_tau(
-    ant::Ant1,
+    ant::Ant,
 )   
     meas = ant.measure
     out = (length(meas) > 0) ? meas[1] : 0.0
@@ -423,7 +423,7 @@ aco_get_num_elite(
     as elite
 """
 function aco_get_num_elite(
-    colony::AntColony3,
+    colony::AntColony,
     num_elite::Real;
     max_frac::Float64 = 0.5,
 )
@@ -457,7 +457,7 @@ Get the AbstractWeights used to guide sampling for ants
 
 ```
 aco_get_path_weights(
-    colony::AntColony3,
+    colony::AntColony,
 )
 ```
 
@@ -467,7 +467,7 @@ aco_get_path_weights(
 - `colony`: the ant colony to use to calculate weights
 """
 function aco_get_path_weights(
-    colony::AntColony3,
+    colony::AntColony,
 )
     # 
     vec_eta = colony.heuristics
@@ -489,7 +489,7 @@ Sample new paths for ants in the colony
 
 ```
 aco_update_ant_paths!(
-    colony::AntColony3,
+    colony::AntColony,
     sample_space::Vector{Int64},
     k::Int64,
 )
@@ -498,7 +498,7 @@ aco_update_ant_paths!(
 ```
 aco_update_ant_paths!(
     params_optimization::OptimizationParameters,
-    colony::AntColony3,
+    colony::AntColony,
 )
 ```
 
@@ -517,7 +517,7 @@ aco_update_ant_paths!(
     initialization
 """
 function aco_update_ant_paths!(
-    colony::AntColony3,
+    colony::AntColony,
     sample_space::Vector{Int64},
     k::Int64;
     include_s0::Bool = false,
@@ -556,7 +556,7 @@ end
 
 function aco_update_ant_paths!(
     params_optimization::OptimizationParameters,
-    colony::AntColony3;
+    colony::AntColony;
     kwargs...
 )
 
@@ -585,7 +585,7 @@ Update the ant colony at an iteration by doing the following actions:
 aco_update_colony!(
     params_iterator::IteratorParameters,
     params_optimization::OptimizationParameters,
-    colony::AntColony3,
+    colony::AntColony,
     num_elite::Real;
     include_s0::Bool = false,
     msg::Union{String, Nothing}
@@ -598,7 +598,7 @@ aco_update_colony!(
 - `params_iterator`: IteratorParameters object used to track best values, 
     iteration index, etc.
 - `params_optimization`: OptimizationParameters object
-- `colony`: AntColony3 object to operate on
+- `colony`: AntColony object to operate on
 - `num_elite`: specification of number of elite, can be float 
     (0 ≤ `num_elite` < 1) or an integer (≥ 1). If Nothing, elitism is not used
 
@@ -611,7 +611,7 @@ aco_update_colony!(
 function aco_update_colony!(
     params_iterator::IteratorParameters,
     params_optimization::OptimizationParameters,
-    colony::AntColony3,
+    colony::AntColony,
     num_elite::Real;
     include_s0::Bool = false,
     msg::Union{String, Nothing} = nothing,
@@ -735,7 +735,7 @@ aco_initialize_colony(
 
 ##  Keyword Arguments
 
-- `kwargs...`: passed to AntColony3 on initialization
+- `kwargs...`: passed to AntColony on initialization
 """
 function aco_initialize_colony(
     params_optimization::OptimizationParameters,
@@ -749,15 +749,15 @@ function aco_initialize_colony(
     )
 
     # initialize the storage vector (note that resize! and fill! point to same object)
-    vec_population = Vector{Ant1}(
+    vec_population = Vector{Ant}(
         [
-            Ant1(collect(1:params_optimization.n_nodes))
+            Ant(collect(1:params_optimization.n_nodes))
             for x in 1:population_size
         ]
     )
 
     # initialize the colony; updated afterwards 
-    colony = AntColony3(
+    colony = AntColony(
         vec_population,
         params_optimization.graph;
         kwargs...
@@ -790,7 +790,7 @@ aco_update_percentiles!(
 
 """
 function aco_update_percentiles!(
-    colony::AntColony3,
+    colony::AntColony,
 )
     # calculate percentiles and update in the object
     vec_percs = get_crude_percentiles([x.measure[1] for x in colony.ants])
@@ -839,7 +839,7 @@ aco_update_params!(
 function aco_update_params!(
     params_iterator::IteratorParameters,
     params_optimization::OptimizationParameters,
-    colony::AntColony3;
+    colony::AntColony;
     msg::Union{String, Nothing} = nothing,
 )
     # log the event?
@@ -887,7 +887,7 @@ end
 Push ant `ant_index` to the path index for vertex `vertex` in colony `colony`. 
 """
 function push_to_path_index_unsafe!(
-    colony::AntColony3,
+    colony::AntColony,
     ant_index::Int64,
     vertex::Int64,
 )
@@ -905,7 +905,7 @@ function push_to_path_index_unsafe!(
 end
 
 function push_to_path_index_unsafe!(
-    colony::AntColony3,
+    colony::AntColony,
     ant_index::Int64,
     vertices::Vector{Int64},
 )
@@ -924,7 +924,7 @@ end
 Support function for Ant Colony optimization; cleat the path indices
 """
 function reset_path_index!(
-    colony::AntColony3,
+    colony::AntColony,
 )
     # reset 
     fill!.(colony.path_index, 0)
