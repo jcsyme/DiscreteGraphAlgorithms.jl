@@ -26,6 +26,8 @@ Implement a simulated annealing algorithm for KPP-Negative (maximize
 #    BEGIN DEFINITIONS    #
 ###########################
 
+prefix_sann = :sann
+
 """
 Implement the acceptance probability and check if the new iteration is accepted
 
@@ -309,7 +311,8 @@ Define conditions under when to break iteration
 ```
 sann_continuation(
     ip::IteratorParameters,
-    op::OptimizationParameters
+    op::OptimizationParameters;
+    kwargs...
 )::Bool
 ```
 
@@ -325,12 +328,11 @@ Returns a `Bool` defining whether or not to continue iterating
 """
 function sann_continuation(
     ip::IteratorParameters,
-    op::OptimizationParameters
+    op::OptimizationParameters;
+    kwargs...
 )::Bool
 
     out = (ip.i < op.max_iter) 
-    #out &= (ip.eps >= op.epsilon) 
-    #out &= (ip.i_no_improvement < op.max_iter_no_improvement)
     out &= ip.cont
 
     return out
@@ -364,6 +366,8 @@ sann_iterand!(
     error relative to the known best exceeds this value, then will reset to best
     parameters and restart.
 - `q`: exponential cooling rate in temperature function (see ?sann_temperature)
+- `randomize_swap_count`: randomize the number of vertices that are swapped at
+    each iteration?
 - `restart_from_best_fraction`: fraction of time where the algorithm checks the 
     error and reverts to the best known outcome if attempt errors are too high
     (i.e., if they exceeed `max_exploration_error`). This process is only 
@@ -379,6 +383,7 @@ function sann_iterand!(
     alpha::Float64 = 1.0,
     max_exploration_error::Float64 = 0.25,
     q::Float64 = 0.5,
+    randomize_swap_count::Bool = false,
     restart_from_best_fraction::Float64 = 0.33,
 )
     
@@ -389,8 +394,7 @@ function sann_iterand!(
         q = q,    
     )
     
-    #randomize_swap_count = params_optimization.randomize_swap_count
-    swap_size = 1#randomize_swap_count ? sample(1:n_nodes, 1; replace = false)[1] : 1
+    swap_size = randomize_swap_count ? sample(1:n_nodes, 1; replace = false)[1] : 1
     S_try, S_out, S_in = sample_for_swap(params_optimization, swap_size)
 
     """
@@ -525,5 +529,5 @@ sann_iterand = Iterand(
     sann_iterand!;
     log_iteration! = sann_log_iteration!,
     log_result! = sann_log_result!,
-    opts_prefix = :sann,
+    opts_prefix = prefix_sann,
 )

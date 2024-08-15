@@ -48,7 +48,6 @@ OptimizationParameters
         see `?select_algorithm_from_benchmark_for_iteration()` for more 
         information on these arguments
 
-- `epsilon`: optional acceptance threshold for algorithms
 - `log_info`: log information as iteration proceeds?
 - `max_iter`: Maximum number of iterations to perform
 - `max_iter_no_improvement`: Optional specification of a maximum number of
@@ -77,14 +76,12 @@ OptimizationParameters
         )
 
 - `S`: Initial set `S` to use for graph algorithms. 
-- `randomize_swap_count`: DEPRECATE move to opts
 """
 mutable struct OptimizationParameters
     n_nodes::Int64
     graph_wrapper::GraphWrapper
     dict_arrays_distance::Union{Dict, Nothing}
     distance_algorithm::Symbol
-    epsilon::Float64
     log_info::Bool
     max_iter::Int64
     max_iter_no_improvement::Int64
@@ -92,7 +89,6 @@ mutable struct OptimizationParameters
     objective_function_name::Symbol
     opts::Union{Dict, Nothing}
     S::Union{Vector{Int64}, UnitRange{Int64}, Nothing}
-    randomize_swap_count::Bool
     all_vertices::Vector{Int64}
     graph::Union{SimpleGraph, SimpleDiGraph}
     obj_best::Union{Real, Nothing}
@@ -110,7 +106,6 @@ mutable struct OptimizationParameters
         benchmark_selection_metric::Symbol = :mean,
         dict_arrays_distance::Union{Dict, Nothing} = nothing,
         distance_algorithm::Symbol = :auto,
-        epsilon::Float64 = 10^(-6),
         log_info::Bool = false,
         max_iter::Int64 = 1000,
         max_iter_no_improvement::Int64 = 200,
@@ -118,7 +113,6 @@ mutable struct OptimizationParameters
         objective_function_name::Symbol = :fragmentation,
         opts::Union{Dict, Nothing} = nothing,
         S::Union{Vector{Int64}, UnitRange{Int64}, Nothing} = nothing,
-        randomize_swap_count::Bool = false,
         kwargs...
     )
         
@@ -251,7 +245,6 @@ mutable struct OptimizationParameters
             graph_wrapper,
             dict_arrays_distance,
             distance_algorithm,
-            epsilon,
             log_info,
             max_iter,
             max_iter_no_improvement,
@@ -259,7 +252,6 @@ mutable struct OptimizationParameters
             objective_function_name,
             opts,
             S,
-            randomize_swap_count,
             all_vertices,
             graph,
             obj_best,
@@ -444,25 +436,30 @@ get_iterand_options(
 
 ##  Keyword Arguments
 
+- `function_type`: Either `:update` or `:continuation`' 
 """
 function get_iterand_options(
     iterand::Iterand,
     params_optimization::OptimizationParameters;
+    function_type::Symbol = :update,
 )
-    # first, check Iterand specific parameters
-    dict_specific = Dict{Symbol, Any}()
+    # ensure function_type is valid
+    !(function_type in [:update, :continuation]) && (function_type = :update)
 
-    if !isa(iterand.opts_prefix, Nothing)
-        prefix = "$(iterand.opts_prefix)_"
-        dict_specific = Dict{Symbol, Any}(
-            (Symbol(replace(String(k), prefix => "")), v) 
-            for (k, v) in params_optimization.opts
-            if startswith(String(k), prefix)
+    # first, check Iterand specific parameters
+    dict_specific = (
+        !isa(iterand.opts_prefix, Nothing)
+        ? get_opts_subdict_from_prefix(
+            params_optimization.opts,
+            iterand.opts_prefix,
         )
-    end
+        : Dict{Symbol, Any}()
+    )
 
     # get applicable generic arguments, then overwrite with method-specific
-    dict_generic = check_kwargs(iterand.update!; params_optimization.opts...)
+    func = (function_type == :update) ? iterand.update! : iterand.continuation
+    dict_generic = check_kwargs(func; params_optimization.opts...)
+    dict_specific = check_kwargs(func; dict_specific...)
     merge!(dict_generic, dict_specific)
 
     return dict_generic
@@ -511,6 +508,43 @@ function get_objective_from_removed_vertices(
     reset_optimization_graph!(params_optimization)
 
     return obj_try
+end
+
+
+
+"""
+Using the iterand's prefix, retrieve any options specified in dict_opts
+
+# Constructs
+
+```
+get_opts_subdict_from_prefix(
+    dict_ops::Dict,
+    iterand_prefix::Symbol,
+)
+```
+
+##  Function Arguments
+
+- `dict_ops`: dictionary containing opts with algorithm-specific prefixes in 
+    keys
+- `iterand_prefix`: the iterand prefix to use
+
+##  Keyword Arguments
+"""
+function get_opts_subdict_from_prefix(
+    dict_ops::Dict,
+    iterand_prefix::Symbol,
+)
+    # get the 
+    prefix = "$(iterand_prefix)_"
+    dict_specific = Dict{Symbol, Any}(
+        (Symbol(replace(String(k), prefix => "")), v) 
+        for (k, v) in dict_ops
+        if startswith(String(k), prefix)
+    )
+
+    return dict_specific
 end
 
 
@@ -572,7 +606,16 @@ function iterate(
     params_optimization.obj_best = nothing # erase previous value
 
     # select options to be passed to iterand
-    dict_update_opts = get_iterand_options(iterand, params_optimization)
+    dict_continuation_opts = get_iterand_options(
+        iterand, 
+        params_optimization;
+        function_type = :continuation,
+    )
+    dict_update_opts = get_iterand_options(
+        iterand, 
+        params_optimization;
+        function_type = :update,
+    )
     
     # get current value of objective function (e.g., fragmentation)
     F = params_optimization.objective_function(
@@ -588,7 +631,11 @@ function iterate(
 
     ##  ITERATE USING THE HEURISTIC ITERAND
     
-    while iterand.continuation(params_iterator, params_optimization)
+    while iterand.continuation(
+        params_iterator, 
+        params_optimization; 
+        dict_continuation_opts...
+    )
         
         iterand.update!(
             params_iterator, 

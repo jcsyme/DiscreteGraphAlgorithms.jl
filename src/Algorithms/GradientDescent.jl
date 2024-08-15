@@ -20,6 +20,13 @@ Implement a gradient descent optimization algorithm for KPP-Negative (maximize
 """
 
 
+
+###########################
+#    BEGIN DEFINITIONS    #
+###########################
+
+prefix_graddesc = :graddesc
+
 """
 Define conditions under when to break iteration
 
@@ -44,7 +51,8 @@ Returns a `Bool` defining whether or not to continue iterating
 """
 function graddesc_continuation(
     ip::IteratorParameters,
-    op::OptimizationParameters
+    op::OptimizationParameters;
+    kwargs...
 )::Bool
     out = ((ip.i < op.max_iter) & ip.cont)
     return out
@@ -205,4 +213,5 @@ graddesc_iterand = Iterand(
     graddesc_iterand!;
     log_iteration! = graddesc_log_iteration!,
     log_result! = graddesc_log_result!,
+    opts_prefix = prefix_graddesc,
 )

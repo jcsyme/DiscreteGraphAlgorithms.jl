@@ -25,6 +25,8 @@ Implement a stochastic gradient descent algorithm for KPP-Negative (maximize
 #    BEGIN DEFINITIONS    #
 ###########################
 
+prefix_gs = :gs
+
 """
 Define conditions under when to break iteration
 
@@ -43,17 +45,26 @@ gs_continuation(
 - `op`: parameters used to set up the algorithm run
 
 
+##  Keyword Arguments
+
+- `epsilon`: threshold used to denote convergence. If the directional value of 
+    the change in the objective function is less than epsilon, then the 
+    algorithm will terminate.
+
+
 # Returns
 
 Returns a `Bool` defining whether or not to continue iterating
 """
 function gs_continuation(
     ip::IteratorParameters,
-    op::OptimizationParameters
+    op::OptimizationParameters;
+    epsilon::Float64 = 10.0^(-6.0),
+    kwargs...
 )::Bool
 
     out = (ip.i < op.max_iter) 
-    out &= (ip.eps >= op.epsilon) 
+    out &= (ip.eps >= epsilon) 
     out &= (ip.i_no_improvement < op.max_iter_no_improvement)
     out &= ip.cont
 
@@ -75,18 +86,26 @@ gs_iterand!(
 ```
 
 ##  Function Arguments
+
 - `params_iterator`: parameters used in iteration
 - `params_optimization`: parameters used to set up the algorithm run
+
+
+##  Keyword Arguments
+
+- `randomize_swap_count`: randomize the number of vertices that are swapped at
+    each iteration?
 """
 function gs_iterand!(
     params_iterator::IteratorParameters,
-    params_optimization::OptimizationParameters,
+    params_optimization::OptimizationParameters;
+    randomize_swap_count::Bool = false,
 )
     if ((params_iterator.i == 0) & !isa(params_optimization.S, Nothing))
         swap_size = 0
     else
         swap_size = (
-            params_optimization.randomize_swap_count 
+            randomize_swap_count 
             ? StatsBase.sample(1:n_nodes, 1; replace = false)[1] 
             : 1
         )
@@ -188,5 +207,5 @@ gs_iterand = Iterand(
     gs_iterand!;
     log_iteration! = gs_log_iteration!,
     log_result! = gs_log_result!,
-    opts_prefix = :gs,
+    opts_prefix = prefix_gs,
 )

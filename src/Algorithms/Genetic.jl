@@ -24,6 +24,8 @@ Implement a genetic annealing algorithm for optimizations focused on selecting
 #    BEGIN DEFINITIONS    #
 ###########################
 
+prefix_genetic = :genetic
+
 # some types
 FloatOrNoth = Union{Float64, Nothing}
 VecOrNoth{T} = Union{Vector{T}, Nothing}
@@ -957,11 +959,11 @@ Returns a `Bool` defining whether or not to continue iterating
 """
 function genetic_continuation(
     ip::IteratorParameters,
-    op::OptimizationParameters
+    op::OptimizationParameters;
+    kwargs...
 )::Bool
 
     out = (ip.i < op.max_iter) 
-    #out &= (ip.eps >= op.epsilon) 
     out &= (ip.i_no_improvement < op.max_iter_no_improvement)
     out &= ip.cont
 
@@ -1153,5 +1155,5 @@ genetic_iterand = Iterand(
     genetic_iterand!;
     log_iteration! = genetic_log_iteration!,
     log_result! = genetic_log_result!,
-    opts_prefix = :genetic,
+    opts_prefix = prefix_genetic,
 )

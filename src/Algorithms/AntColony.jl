@@ -50,6 +50,8 @@ export IterSpace
 #    BEGIN DEFINITIONS    #
 ###########################
 
+prefix_aco = :aco
+
 # some default parameters
 default_parameter_aco_beta = 0.25
 default_parameter_aco_num_elite = 0.5
@@ -965,11 +967,11 @@ Returns a `Bool` defining whether or not to continue iterating
 """
 function aco_continuation(
     ip::IteratorParameters,
-    op::OptimizationParameters
+    op::OptimizationParameters;
+    kwargs...
 )::Bool
 
     out = (ip.i < op.max_iter) 
-    #out &= (ip.eps >= op.epsilon) 
     out &= (ip.i_no_improvement < op.max_iter_no_improvement)
     out &= ip.cont
 
@@ -1153,6 +1155,6 @@ aco_iterand = Iterand(
     aco_iterand!;
     log_iteration! = aco_log_iteration!,
     log_result! = aco_log_result!,
-    opts_prefix = :aco,
+    opts_prefix = prefix_aco,
 )
 
