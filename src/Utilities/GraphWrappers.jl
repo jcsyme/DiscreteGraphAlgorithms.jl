@@ -126,15 +126,15 @@ function get_distance_matrices(
     
 
     # get the algorithm to use for the distance matrics
-    alg_func = select_algorithm(algorithm; n_vertices = m)
+    alg_name = select_algorithm(algorithm; n_vertices = m)
+    dict_algs = Dict(
+        :bellman_ford => bellman_ford,
+        :dijkstra_kary => dijkstra_kary,
+        :dijkstra_quickheaps => dijkstra_quickheaps,
+    )
 
-    if alg_func == :bellman_ford
-        alg_func = bellman_ford
-    elseif alg_func == :dijkstra_kary
-        alg_func == dijkstra_kary
-    elseif alg_func == :dijkstra_quickheaps
-        alg_func == dijkstra_quickheaps
-    end
+    alg_func = get(dict_algs, alg_name, nothing)
+    isa(alg_func, Nothing) && error("Function $(alg_nm) undefined.")
 
 
     for i in 1:m
@@ -389,8 +389,7 @@ function df_to_graph_wrapper(
         n_vertices,
         n_vertices,
     )
-    
-    
+
     graph_wrapper = GraphWrapper(adj; vertex_names = vertex_names)
     
     return graph_wrapper
