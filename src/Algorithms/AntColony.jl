@@ -159,7 +159,7 @@ struct AntColony
     )
         
         ##  CHECK ANTS
-
+        
         # check specification of ants
         n_ants = length(ants)
         (n_ants == 0) && error("No ants found in AntColony: stopping...")
@@ -179,14 +179,30 @@ struct AntColony
         n_vertices = nv(graph)
 
 
-        ##  INITIALIZE 
+        ##  INITIALIZE HEURISTIC 
 
-        # set heuristics
-        if heuristic == :betweenness_centrality
-            heuristics = betweenness_centrality(graph)
-        elseif heuristic == :eigenvector_centrality
-            heuristics = eigenvector_centrality(graph)
+        heuristics = nothing 
+        try
+            func = eval(heuristic)
+            heuristics = abs.(func(graph))
+        
+        catch e
+            error("Error instantiating AntColony: invalid heuristic '$(heuristic)' specified.")
         end
+        
+        # try degree centrality and then uniform weighting
+        if sum(heuristics) == 0
+            @warn "Heuristic $(heuristic) produced all zero values; trying degree centrality"
+            heuristics = degree_centrality(graph)
+        end
+
+        if sum(heuristics) == 0
+            @warn "Heuristic degree centrality produced all zero values; weighting heuristics uniformly. You may reconsider running this code, as the graph is trivial and completely sparse."
+            heuristics = ones(Float64, n_vertices)
+        end
+
+
+        ##  INITIALIZE OTHER PARTS
 
         # initialize pheremones
         tau_0 = max(tau_0, 0.0000001)
