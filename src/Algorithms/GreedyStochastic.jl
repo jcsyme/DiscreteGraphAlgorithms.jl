@@ -207,5 +207,5 @@ gs_iterand = Iterand(
     gs_iterand!;
     log_iteration! = gs_log_iteration!,
     log_result! = gs_log_result!,
-    opts_prefix = prefix_gs,
+    opts_prefix = :gs,#prefix_gs,
 )

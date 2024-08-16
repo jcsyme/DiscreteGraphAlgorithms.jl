@@ -630,13 +630,13 @@ function iterate(
 
 
     ##  ITERATE USING THE HEURISTIC ITERAND
-    
+
     while iterand.continuation(
         params_iterator, 
         params_optimization; 
         dict_continuation_opts...
     )
-        
+
         iterand.update!(
             params_iterator, 
             params_optimization;
