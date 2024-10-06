@@ -25,6 +25,7 @@ struct GraphWrapper
         
         # intialize some graph components
         A = isa(A, Matrix{Float64}) ? sparse(A) : A
+        force_undirected && (A = symmetricize_sparse(A))
         dims = (size(A)[1], sum(A))
         
         vertex_inds = collect(1:size(A)[1])
@@ -201,6 +202,7 @@ read_egl(
     fp::String;
     delim::String = " ",
     edge_weight_default::Float64 = 1.0,
+    force_undirected::Bool = false,
     infer_weights::Bool = true,
     skip_rows::Int64 = 0,
 )::Union{Nothing, test1_FastGraph}
@@ -219,6 +221,8 @@ read_egl(
     * if the extension in `fp` is .egl, infers delim as " "
 - `edge_weight_default`: default edge weight value to specify if an
     invalid edge weight is found
+- `force_undirected`: force the graph adjacency to be read in as undirected? If
+    true, any edge from i -> j will also be included as j -> i.
 - `infer_weights`: bool denoting whether or not to infer weighting. 
     - If `true`, looks for inputs with 3 columns, assumed to be 
 
@@ -237,6 +241,7 @@ function read_egl(
     fp::String;
     delim::Union{String, Nothing} = nothing,
     edge_weight_default::Float64 = 1.0,
+    force_undirected::Bool = false,
     infer_weights::Bool = true,
     skip_rows::Int64 = 0,
 )::Union{Nothing, GraphWrapper}
@@ -311,7 +316,11 @@ function read_egl(
     )
     
     
-    graph_wrapper = GraphWrapper(adj; vertex_names = vertex_names)
+    graph_wrapper = GraphWrapper(
+        adj; 
+        force_undirected = force_undirected,
+        vertex_names = vertex_names,
+    )
     
     return graph_wrapper
 end

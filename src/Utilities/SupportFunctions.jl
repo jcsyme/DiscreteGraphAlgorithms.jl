@@ -786,3 +786,22 @@ function str_replace(
     return str_out
 end
 
+
+
+"""
+Make a sparse matrix symmetric
+"""
+function symmetricize_sparse(
+    matrix::SparseMatrixCSC{T, U}
+) where T where U
+
+    # if already symmetric, return the matrix
+    issymmetric(matrix) && (return matrix)
+
+    # otherwise, just transpose and look for values != 0
+    nz = findnz(matrix + matrix')
+    out = sparse(nz[1:2]..., ones(T, length(nz[1])))
+    
+    return out
+end
+
