@@ -119,19 +119,19 @@ The authors are grateful to RAND Center for Global Risk and Security Advisory Bo
 
 ## References/Bibliography
 
-Borgatti, S.P. Identifying sets of key players in a social network. Comput Math Organiz Theor 12, 21–34 (2006). [DOI](https://doi.org/10.1007/s10588-006-7084-x)
+Borgatti, S.P. Identifying sets of key players in a social network. Comput Math Organiz Theor 12, 21–34 (2006). [doi](https://doi.org/10.1007/s10588-006-7084-x)
 
 Dorigo, Marco and Stützle, T.. Ant Colony Optimization. 2004. The MIT Press, Cambridge, Massachusetts. ISBN 0-262-04219-3. [MIT Press](https://mitpress.mit.edu/9780262042192/ant-colony-optimization/)
 
 Hadji, R., Rahoual, M., Talbi, E. G., & Bachelet, V. (2000). Ant colonies for the set covering problem. In Abstract proceedings of ANTS (pp. 63-66). [Research Gate](https://www.researchgate.net/publication/245585705_Ant_Colonies_for_the_Set_Covering_Problem)
 
-Katoch, S., Chauhan, S.S. & Kumar, V. A review on genetic algorithm: past, present, and future. Multimed Tools Appl 80, 8091–8126 (2021). [DOI](https://doi.org/10.1007/s11042-020-10139-6)
+Katoch, S., Chauhan, S.S. & Kumar, V. A review on genetic algorithm: past, present, and future. Multimed Tools Appl 80, 8091–8126 (2021). [doi](https://doi.org/10.1007/s11042-020-10139-6)
 
-Krebs, Valdis. (2002). Mapping Networks of Terrorist Cells. 24. 
+Krebs, Valdis. (2002). Mapping Networks of Terrorist Cells. 24. [Research Gate](https://www.researchgate.net/publication/2490397_Mapping_Networks_of_Terrorist_Cells)
 
-Leguizamón, Guillermo, Michalewicz, Z. and Schutz, M. An ant system for the maximum independent set problem. VII Congreso Argentino de Ciencias de la Computación (2001).[Article](https://sedici.unlp.edu.ar/handle/10915/23384)  
+Leguizamón, Guillermo, Michalewicz, Z. and Schutz, M. An ant system for the maximum independent set problem. VII Congreso Argentino de Ciencias de la Computación (2001). [Article](https://sedici.unlp.edu.ar/handle/10915/23384)  
 
-Peixoto, T. terrorists_911 — 9-11 terrorist network. Accessed Feb 2024. Netzschleuder network catalogue, repository and centrifuge. https://networks.skewed.de/net/terrorists_911 [Krebs Terrorist Network Example](https://networks.skewed.de/net/terrorists_911)
+Peixoto, T. terrorists_911 — 9-11 terrorist network. Accessed Feb 2024. Netzschleuder network catalogue, repository and centrifuge. https://networks.skewed.de/net/terrorists_911 [Krebs Terrorist Network Data](https://networks.skewed.de/net/terrorists_911)
 
 
  
