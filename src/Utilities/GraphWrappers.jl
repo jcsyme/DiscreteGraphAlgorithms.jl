@@ -1,9 +1,24 @@
 
 """
-Structure containing information for fragmentation
+Graph structure storing vertex names, adjacency matrix, weights, and other
+    factors that are often accessed. 
 
 
+Initialization Arguments
+------------------------ 
 - `A`: adjacency matrix used to initialize 
+
+Optional Arguments
+------------------
+- `force_undirected`: force the graph to be undirected? If so, ensures the
+    adjacency matrix is symmetric
+- `vertex_names`: optional ordered list of vertex names to provide
+- `w`: optional edge weights to provide
+- `graph`: optional graph to provide;
+    NOTE: Should be used with care and ONLY if the value of A is certain.
+
+    GraphWrapper can be initialized safely from a graph using 
+    graph_to_graph_wrapper()
 """
 struct GraphWrapper
     A::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int64}}
@@ -19,19 +34,26 @@ struct GraphWrapper
     function GraphWrapper(
         A::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int64}};
         force_undirected::Bool = false,
+        graph::Union{AbstractGraph, Nothing} = nothing,
         vertex_names::Union{Vector, Nothing} = nothing,
         w::Union{Vector{Float64}, Nothing} = nothing,
     )
         
         # intialize some graph components
         A = isa(A, Matrix{Float64}) ? sparse(A) : A
-        force_undirected && (A = symmetricize_sparse(A))
         dims = (size(A)[1], sum(A))
         
         vertex_inds = collect(1:size(A)[1])
         vertex_names = isa(vertex_names, Nothing) ? vertex_inds : ((length(vertex_names) == dims[1]) ? vertex_names : vertex_inds)
         w = isa(w, Nothing) ? A.nzval : ((size(w) == size(A.nzval)) ? w : A.nzval)
-        graph = LinearAlgebra.issymmetric(A) ? SimpleGraph(A) : SimpleDiGraph(A)
+
+        # check graph
+        if isa(graph, Nothing)
+            force_undirected && (A = symmetricize_sparse(A))
+            graph = LinearAlgebra.issymmetric(A) ? SimpleGraph(A) : SimpleDiGraph(A)
+        else
+            !is_directed(graph) && (A = symmetricize_sparse(A))
+        end
 
         D, D_inv = get_distance_matrices(A);
   
@@ -50,6 +72,23 @@ struct GraphWrapper
 end
 
 
+
+"""
+Convert a graph to a graph wrapper
+"""
+function graph_to_graph_wrapper(
+    graph::AbstractGraph;
+    kwargs...
+)
+    A = Graphs.LinAlg.adjacency_matrix(graph)
+
+    out = GraphWrapper(
+        A;
+        graph = graph,
+        kwargs...
+    )
+
+end
 
 """
 # Information
@@ -193,7 +232,7 @@ end
 
 
 """
-Read an edgelist from a .egl file. Returns a 
+Read an edgelist from a .egl file. Returns a GraphWrapper object.
 
 ##  Constructs
 
@@ -234,7 +273,8 @@ read_egl(
 
     - If `false`, only looks for edges, ignoring potential weight 
         specification.
-- `skip_lines`: number of lines to skip in input edge weights
+- `skip_rows`: number of lines to skip in input edge weights. 
+    NOTE: use this argument if your file has a header (e.g., skip_rows = 1).
 
 """
 function read_egl(

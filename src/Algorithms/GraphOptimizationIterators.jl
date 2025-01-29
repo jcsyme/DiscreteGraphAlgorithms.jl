@@ -585,7 +585,19 @@ iterate(
 
 ##  Returns
 
+- Returns a tuple of the following form:
 
+    (
+        obj_best,
+        S_best,
+        graph_best,
+    )
+
+    where:
+
+        * obj_return: objective value associated with the set S_best
+        * S_best: set of vertices associated with the best objective value
+        * graph_best: graph that has removed vertices S_best
 """
 function iterate(
     iterand::Iterand,
