@@ -47,6 +47,7 @@ export all_dga_prefixes, # exports defined in this file
        GraphWrapper, # add from GraphWrappers
        df_to_graph_wrapper,
        get_distance_matrices,
+       graph_to_graph_wrapper,
        read_egl,
        Iterand, # GraphOptimizationIterators
        IteratorParameters,

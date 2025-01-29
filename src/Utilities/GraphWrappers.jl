@@ -74,7 +74,7 @@ end
 
 
 """
-Convert a graph to a graph wrapper
+Convert a SimpleGraph to a GraphWrapper. 
 """
 function graph_to_graph_wrapper(
     graph::AbstractGraph;
@@ -88,7 +88,10 @@ function graph_to_graph_wrapper(
         kwargs...
     )
 
+    return out
 end
+
+
 
 """
 # Information
