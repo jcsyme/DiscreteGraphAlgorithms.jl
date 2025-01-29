@@ -247,7 +247,7 @@ read_egl(
     force_undirected::Bool = false,
     infer_weights::Bool = true,
     skip_rows::Int64 = 0,
-)::Union{Nothing, test1_FastGraph}
+)::Union{Nothing, GraphWrapper}
 ```
 
 ##  Function Arguments

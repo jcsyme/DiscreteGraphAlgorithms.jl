@@ -509,14 +509,16 @@ Sample new paths for ants in the colony
 aco_update_ant_paths!(
     colony::AntColony,
     sample_space::Vector{Int64},
-    k::Int64,
+    k::Int64;
+    force_s0::Bool,
 )
 ```
 
 ```
 aco_update_ant_paths!(
     params_optimization::OptimizationParameters,
-    colony::AntColony,
+    colony::AntColony;
+    include_s0::Bool,
 )
 ```
 
@@ -531,14 +533,14 @@ aco_update_ant_paths!(
 
 ##  Keyword Arguments
 
-- `include_s0`: include params_optimization.S in the sample? Used for 
-    initialization
+- `force_s0`: optional starting point to force into initial colony
+- `include_s0`: include params_optimization.S in starting colony
 """
 function aco_update_ant_paths!(
     colony::AntColony,
     sample_space::Vector{Int64},
     k::Int64;
-    include_s0::Bool = false,
+    force_s0::Union{Vector{Int64}, Nothing} = nothing,
 )
 
     # clear path index
@@ -550,8 +552,8 @@ function aco_update_ant_paths!(
     # for each ant, get a new path based on weights, then update the path index
     for (i, ant) in enumerate(colony.ants)
         
-        if (i == 1) & include_s0
-            s = copy(params_optimization.S)
+        if (i == 1) & !isa(force_s0, Nothing)
+            s = copy(force_s0)
         else 
             s = StatsBase.sample(
                 sample_space,
@@ -575,13 +577,17 @@ end
 function aco_update_ant_paths!(
     params_optimization::OptimizationParameters,
     colony::AntColony;
+    include_s0::Bool = false,
     kwargs...
 )
+
+    force_s0 = include_s0 ? params_optimization.S : nothing
 
     aco_update_ant_paths!(
         colony,
         params_optimization.all_vertices,
         params_optimization.n_nodes;
+        force_s0 = force_s0,
         kwargs...
     )
 end
