@@ -80,7 +80,7 @@ function graph_to_graph_wrapper(
     graph::AbstractGraph;
     kwargs...
 )
-    A = Graphs.LinAlg.adjacency_matrix(graph)
+    A = Graphs.LinAlg.adjacency_matrix(graph, Float64)
 
     out = GraphWrapper(
         A;
