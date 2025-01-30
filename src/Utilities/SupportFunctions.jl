@@ -438,6 +438,33 @@ end
 
 
 """
+# Constructs
+
+Retrieve a path to a reference file. Set `check_exist = false` to turn off 
+    verification of existence. If opath is not found and `check_exist == true`,
+    returns nothing. 
+
+```
+get_ref_path(
+    file::String;
+    check_exist::Bool = true,
+)
+```
+
+"""
+function get_ref_path(
+    file::String;
+    check_exist::Bool = true,
+)
+    path = joinpath(@__DIR__, "ref", file)
+    (check_exist & !isfile(path)) && (return nothing)
+    
+    return path
+end
+
+
+
+"""
 Function that returns `nothing` no matter the arguments
 """
 function null_func(
