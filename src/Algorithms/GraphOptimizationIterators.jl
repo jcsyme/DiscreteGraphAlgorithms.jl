@@ -94,6 +94,7 @@ mutable struct OptimizationParameters
     graph::Union{SimpleGraph, SimpleDiGraph}
     obj_best::Union{Real, Nothing}
     objective_function::Function
+    parallel_approach::Symbol
     S_0::Vector{Int64}
     S_best::Vector{Int64}
     S_comp::Union{Vector{Int64}, UnitRange{Int64}, Nothing}
@@ -113,6 +114,7 @@ mutable struct OptimizationParameters
         objective_direction::Symbol = :maximize,
         objective_function_name::Symbol = :fragmentation,
         opts::Union{Dict, Nothing} = nothing,
+        parallel_approach::Symbol = :auto,
         S::Union{Vector{Int64}, UnitRange{Int64}, Nothing} = nothing,
         kwargs...
     )
@@ -177,18 +179,29 @@ mutable struct OptimizationParameters
 
 
             ##  SPAWN PRE-ALLOCATED DISTANCE ARRAYS?
+            
+            try_par = try_parallel(
+                graph; 
+                parallel_approach = parallel_approach, 
+            )
+
 
             spawn_q = check_arrays_for_algorithm(
                 distance_algorithm, 
                 dict_arrays_distance,
             )
 
-            spawn_q && (
+            if spawn_q
+                
+                spawn_type = try_par ? :DistribuatedArray : :Vector
+
                 dict_arrays_distance = spawn_arrays(
                     graph_wrapper.graph,
                     distance_algorithm;
+                    type = spawn_type,
                 )
-            )
+                
+            end
 
             # set the objective function
             function objective_function(
@@ -200,6 +213,7 @@ mutable struct OptimizationParameters
                     graph_input,
                     dict_arrays_distance;
                     distance_algorithm = distance_algorithm,
+                    parallel_approach = parallel_approach,
                     kwargs...
                 )
 
@@ -211,6 +225,7 @@ mutable struct OptimizationParameters
                     graph,
                     dict_arrays_distance;
                     distance_algorithm = distance_algorithm,
+                    parallel_approach = parallel_approach,
                     kwargs...
                 )
 
@@ -259,6 +274,7 @@ mutable struct OptimizationParameters
             graph,
             obj_best,
             objective_function,
+            parallel_approach,
             S_0,
             S_best,
             S_comp,
