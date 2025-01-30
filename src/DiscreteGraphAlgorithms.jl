@@ -51,7 +51,7 @@ export all_dga_prefixes, # exports defined in this file
        read_egl,
        Iterand, # GraphOptimizationIterators
        IteratorParameters,
-       OptimizationParameters,
+       OptimizationParameters, 
        get_iterand_options,
        get_objective_from_removed_vertices,
        iterate,
@@ -117,6 +117,7 @@ export all_dga_prefixes, # exports defined in this file
        check_path,
        check_valid_values!,
        get_crude_percentiles,
+       get_ref_path,
        null_func,
        parse_config,
        print_valid_values,

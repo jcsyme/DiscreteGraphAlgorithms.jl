@@ -455,8 +455,9 @@ get_ref_path(
 function get_ref_path(
     file::String;
     check_exist::Bool = true,
-)
-    path = joinpath(@__DIR__, "ref", file)
+)   
+
+    path = joinpath(dirname(dirname(@__DIR__)), "ref", file)
     (check_exist & !isfile(path)) && (return nothing)
     
     return path
