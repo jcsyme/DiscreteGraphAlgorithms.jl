@@ -19,7 +19,8 @@ OptimizationParameters
 ##  Initialization Arguments
 
 - `n_nodes`: number of vertices to identify 
-- `graph_wrapper`: GraphWrapper to use for graph access
+- `graph_wrapper`: GraphWrapper or Graph to use for graph access--if input as a 
+    graph, will convert to GraphWrapper. 
 
 
 ##  Optional Arguments
@@ -100,7 +101,7 @@ mutable struct OptimizationParameters
     
     function OptimizationParameters(
         n_nodes::Int64,
-        graph_wrapper::GraphWrapper;
+        graph_wrapper::Union{GraphWrapper, AbstractGraph};
         benchmark_algorithms_to_try::Union{Vector{Symbol}, Nothing} = nothing,
         benchmark_n_runs::Int64 = 10,
         benchmark_selection_metric::Symbol = :mean,
@@ -117,7 +118,9 @@ mutable struct OptimizationParameters
     )
         
         ##  CHECK INSTANTIATION  
-
+        
+        # check that input is specified correctly
+        isa(graph_wrapper, AbstractGraph) && (graph_wrapper = graph_to_graph_wrapper(graph_wrapper, ))
         graph = copy(graph_wrapper.graph)
         m, n = size(graph)
         max_iter_no_improvement = minimum([max_iter_no_improvement, max_iter])
