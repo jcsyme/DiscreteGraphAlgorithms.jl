@@ -75,6 +75,11 @@ OptimizationParameters
             :genetic_init_pop_with_op_s => true,
             :genetic_num_elite => 0.1,
         )
+- `parallel_approach`: approach to parallelize. See ?fragmentation for more. One 
+    of the following options:
+    * `auto`: choose based on size of graph
+    * `parallel`: force parallel
+    * `serial`: force serial
 
 - `S`: Initial set `S` to use for graph algorithms. 
 """
@@ -192,7 +197,7 @@ mutable struct OptimizationParameters
             )
 
             if spawn_q
-                
+
                 spawn_type = try_par ? :DistribuatedArray : :Vector
 
                 dict_arrays_distance = spawn_arrays(
