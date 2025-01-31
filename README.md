@@ -17,6 +17,8 @@ The `DiscreteGraphAlgorithms.jl` package includes a suite of several algorithms 
 
 At this time, the only objective function that has been implemented is `fragmentation`, based on the `GraphFragments.jl` package. However, `DiscreteGraphAlgorithms.jl` is designed to be updated to integrate additional metrics that might be of interest for vertex subsets.
 
+**Note**: It is recommended that new users follow the ``discrete_graph_algorithms_examples.ipynb`` Jupyter notebook to get started; it includes information on setting up paralellization; running algorithms serially and in parallel; running algorithms on different graphs; the importance of parameters; and more. 
+
 
 #### Algorithms
 
