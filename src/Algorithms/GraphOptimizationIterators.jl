@@ -587,6 +587,24 @@ iterate(
 )
 ```
 
+
+##  Returns
+
+Returns a tuple of the following form:
+
+    (
+        obj_best,
+        S_best,
+        graph_best,
+    )
+
+    where:
+
+        * obj_return: objective value associated with the set S_best
+        * S_best: set of vertices associated with the best objective value
+        * graph_best: graph that has removed vertices S_best
+
+
 ##  Function Arguments
 
 - `iterand`: optimization iterand, which governs the set of instructions to
@@ -606,22 +624,6 @@ iterate(
     terminates (e.g., in simualted annealing)
 - `kwargs...`: passed to `IteratorParameters` on setup 
 
-
-##  Returns
-
-- Returns a tuple of the following form:
-
-    (
-        obj_best,
-        S_best,
-        graph_best,
-    )
-
-    where:
-
-        * obj_return: objective value associated with the set S_best
-        * S_best: set of vertices associated with the best objective value
-        * graph_best: graph that has removed vertices S_best
 """
 function iterate(
     iterand::Iterand,

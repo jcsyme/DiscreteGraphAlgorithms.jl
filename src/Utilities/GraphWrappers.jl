@@ -197,6 +197,116 @@ end
 
 
 
+"""
+Using the read in vector of matrix edges, convert to matrix. 
+    Assumes sparse edge inputs are indices With names provided
+    separately.
+
+##  Constructs
+
+```
+prepare_vertices_from_edge_index(
+    mat_edges::Vector,
+    vertex_names::Union{Dict, Vector}
+)
+```
+
+###   Returns
+
+(
+    mat_edges_index, 
+    vertex_names, 
+    n_vertices,
+)
+
+"""
+function prepare_vertices_from_edge_index(
+    mat_edges::Vector,
+    vertex_names::Union{Dict, Vector}
+)
+    
+    # ensure string, try to parse as integer
+    mat_edges_str = string.(permutedims(hcat(mat_edges...)))
+    mat_edges_int = tryparse.((Int64, ), mat_edges_str)
+    (nothing in mat_edges_int) && error("Error converting edge indices to integer.")
+
+    # conver to integer and base to 1
+    mat_edges_int = tryparse.(
+        (Int64, ),
+        string.(permutedims(hcat(mat_edges...)))
+    )
+    mat_edges_int = mat_edges_int .- minimum(mat_edges_int) .+ 1
+    all_vertices_int = sort(unique(vcat(mat_edges_int...)))
+    n_vertices = length(all_vertices_int)
+    
+    
+    ##  CHECK VERTEX NAMES
+    
+    if isa(vertex_names, Dict)
+        all_vertex_names = get.((vertex_names, ), all_vertices_int, nothing)
+        if nothing in all_vertex_names
+            error("Invalid vertices specified in dictionary: some vertices were not found. Check the dictionary.")
+        end
+    
+    elseif isa(vertex_names, Vector)
+        n_in = length(vertex_names) 
+        (n_in != n_vertices) && error("Invalid length of vertex names $(n_in): must be of length $(n_vertices).")
+        
+        all_vertex_names = vertex_names
+    end
+    
+    out = (mat_edges_int, all_vertex_names, n_vertices)
+
+    return out
+end
+
+
+
+"""
+Using the read in vector of matrix edges, convert to matrix. 
+    Assumes sparse edge inputs are names, not indices.
+
+##  Constructs
+
+```
+prepare_vertices_from_edge_names(
+    mat_edges::Vector,
+)
+```
+
+###   Returns
+
+(
+    mat_edges_index, 
+    vertex_names, 
+    n_vertices,
+)
+
+"""
+function prepare_vertices_from_edge_names(
+    mat_edges::Vector,
+)
+    ## get all vertices as a dictionary
+    all_vertex_names = sort(string.(unique(vcat(mat_edges...))))
+    all_vertices = collect(1:length(all_vertex_names))
+    n_vertices = length(all_vertices)
+    
+    dict_vertex_to_index = Dict(zip(all_vertex_names, all_vertices))
+    dict_index_to_vertex = Dict(zip(all_vertices, all_vertex_names))
+    vertex_names = get.((dict_index_to_vertex, ), all_vertices, nothing)
+
+    # get edges and sparse adjacency
+    mat_edges_string = string.(permutedims(hcat(mat_edges...)))
+    mat_edges_index = get.((dict_vertex_to_index, ), mat_edges_string, 0)
+
+    # return output
+    out = (mat_edges_index, vertex_names, n_vertices)
+
+    return out
+end
+
+
+
 function get_distance_matrices(
     graph::Union{SimpleDiGraph, SimpleGraph, Nothing};
     algorithm::Symbol = :auto,
@@ -247,8 +357,16 @@ read_egl(
     force_undirected::Bool = false,
     infer_weights::Bool = true,
     skip_rows::Int64 = 0,
+    vertex_names::Union{Dict, Vector, Nothing} = nothing,
 )::Union{Nothing, GraphWrapper}
 ```
+
+###  Behavior note
+
+If vertex names are provided, then it is assumed that the edge list
+    specification is in indices. If non-integers are found within the edge list
+    and vertex names are specified, an error will be returned.
+
 
 ##  Function Arguments
 
@@ -260,7 +378,7 @@ read_egl(
 - `delim`: delimiter in edgelist to use to split rows into columns. Infers if
     nothing:
     * if the extension in `fp` is .csv, infers delim as ","
-    * if the extension in `fp` is .egl, infers delim as " "
+    * if the extension in `fp` is .egl, infers delim as " 
 - `edge_weight_default`: default edge weight value to specify if an
     invalid edge weight is found
 - `force_undirected`: force the graph adjacency to be read in as undirected? If
@@ -278,7 +396,10 @@ read_egl(
         specification.
 - `skip_rows`: number of lines to skip in input edge weights. 
     NOTE: use this argument if your file has a header (e.g., skip_rows = 1).
-
+- `vertex_names`: optional specification of vector names; can be:
+    - dictionary maping integer index to names
+    - ordered vector of names
+    - nothing (auto assigned)
 """
 function read_egl(
     fp::String;
@@ -287,6 +408,7 @@ function read_egl(
     force_undirected::Bool = false,
     infer_weights::Bool = true,
     skip_rows::Int64 = 0,
+    vertex_names::Union{Dict, Vector, Nothing} = nothing,
 )::Union{Nothing, GraphWrapper}
     
     # check if file is undefined
@@ -335,19 +457,13 @@ function read_egl(
     end
 
     
-    # get all vertices as a dictionary
-    all_vertex_names = sort(string.(unique(vcat(mat_edges...))))
-    all_vertices = collect(1:length(all_vertex_names))
-    n_vertices = length(all_vertices)
-    
-    dict_vertex_to_index = Dict(zip(all_vertex_names, all_vertices))
-    dict_index_to_vertex = Dict(zip(all_vertices, all_vertex_names))
-    vertex_names = get.((dict_index_to_vertex, ), all_vertices, nothing)
+    tup = (
+        isa(vertex_names, Nothing) 
+        ? prepare_vertices_from_edge_names(mat_edges, )
+        : prepare_vertices_from_edge_index(mat_edges, vertex_names, )
+    )
 
-    
-    # get edges and sparse adjacency
-    mat_edges_string = string.(permutedims(hcat(mat_edges...)))
-    mat_edges_index = get.((dict_vertex_to_index, ), mat_edges_string, 0)
+    mat_edges_index, vertex_names, n_vertices = tup
     
     # 
     adj = sparse(

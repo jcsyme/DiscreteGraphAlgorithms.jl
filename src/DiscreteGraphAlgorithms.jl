@@ -117,6 +117,7 @@ export all_dga_prefixes, # exports defined in this file
        check_path,
        check_valid_values!,
        get_crude_percentiles,
+       get_ref_netzschleuder_graph,
        get_ref_path,
        null_func,
        parse_config,

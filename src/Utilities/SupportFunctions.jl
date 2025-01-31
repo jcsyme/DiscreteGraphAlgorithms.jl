@@ -438,6 +438,44 @@ end
 
 
 """
+Get a graph in the reference directory that contains 
+"""
+function get_ref_netzschleuder_graph(
+    nm::String;
+    field_index::String = "# index",
+    file_edges::String = "edges.csv",
+    file_vertices::String = "nodes.csv",
+)
+    # check paths
+    path_edges = get_ref_path(joinpath(nm, file_edges); check_exist = true)
+    path_vertices = get_ref_path(joinpath(nm, file_vertices); check_exist = true)
+
+    (isa(path_edges, Nothing) | isa(path_vertices, Nothing)) && (return nothing)
+
+    # get node info
+    df = CSV.read(path_vertices, DataFrame)
+
+    # check for name
+    field_nm = [x for x in names(df) if occursin("name", x)]
+    (length(field_nm) != 1) && error("Multiple vertex name fields found in data frame at path $(path_vertices)")
+
+    sort!(df, [field_index])
+    vec_names = df[:, field_nm[1]]
+
+    
+    # get graph wrapper
+    graph_wrapper = read_egl(
+        path_edges; 
+        skip_rows = 1, 
+        vertex_names = vec_names,
+    );
+    
+    return graph_wrapper
+end
+
+
+
+"""
 # Constructs
 
 Retrieve a path to a reference file. Set `check_exist = false` to turn off 
