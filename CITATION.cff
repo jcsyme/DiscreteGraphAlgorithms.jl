@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: DiscreteGraphAlgorithms.jl
+message: Suggested Citation
+type: software
+authors:
+  - email: jsyme@rand.org
+    given-names: James
+    family-names: Syme
+    affiliation: RAND
+repository-code: >-
+  MISSING
+url: MISSING
+abstract: >-
+  A number of algorithms for discrete optimization on subsets of graphs,
+  including Ant Colony Optimization, Genetic, Gradient Descent, Greedy
+  Stochastic, and Simulated Annealing.
+  Requires extension to additional objective functions. 
+license: MIT
